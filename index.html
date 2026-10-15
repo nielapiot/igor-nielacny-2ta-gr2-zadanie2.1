@@ -1,0 +1,434 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f3f2ec">
+  <title>Stopwatch</title>
+  <style>
+    :root {
+      color-scheme: light;
+      --paper: #f3f2ec;
+      --ink: #18211d;
+      --muted: #737a72;
+      --line: #d9dbd2;
+      --green: #176b50;
+      --green-dark: #10553e;
+      --coral: #df684e;
+      --white: #fffefa;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      min-width: 320px;
+      min-height: 100vh;
+      margin: 0;
+      color: var(--ink);
+      background-color: var(--paper);
+      background-image: radial-gradient(#c9ccc1 0.65px, transparent 0.65px);
+      background-size: 18px 18px;
+      font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+    }
+
+    button { font: inherit; }
+
+    .page {
+      min-height: 100vh;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      padding: 30px clamp(20px, 6vw, 88px) 22px;
+    }
+
+    .topbar, .footer {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      font-size: 14px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+    }
+
+    .brand-mark {
+      width: 30px;
+      height: 30px;
+      display: grid;
+      place-items: center;
+      border: 1px solid var(--ink);
+      border-radius: 50%;
+    }
+
+    .brand-mark svg { width: 15px; height: 15px; }
+
+    .eyebrow, .footer {
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    main {
+      width: min(100%, 760px);
+      margin: auto;
+      padding: 56px 0 64px;
+    }
+
+    .heading-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    h1 {
+      margin: 0;
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 30px;
+      font-weight: 400;
+    }
+
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .status::before {
+      width: 7px;
+      height: 7px;
+      content: "";
+      border-radius: 50%;
+      background: #a3a89f;
+    }
+
+    .status.running { color: var(--green); }
+    .status.running::before { background: var(--green); }
+
+    .timer-panel {
+      padding: clamp(24px, 5vw, 46px) clamp(18px, 5vw, 48px) 34px;
+      border: 1px solid #d7d9d0;
+      background: rgba(255, 254, 250, 0.88);
+      box-shadow: 0 12px 36px rgba(34, 43, 35, 0.055);
+    }
+
+    .time {
+      display: flex;
+      justify-content: center;
+      align-items: baseline;
+      color: var(--ink);
+      font-family: "Courier New", monospace;
+      font-size: clamp(48px, 11vw, 92px);
+      font-variant-numeric: tabular-nums;
+      font-weight: 400;
+      line-height: 1;
+      white-space: nowrap;
+    }
+
+    .time .centiseconds {
+      min-width: 2ch;
+      color: var(--coral);
+      font-size: 0.48em;
+    }
+
+    .units {
+      display: flex;
+      justify-content: center;
+      gap: clamp(18px, 5.5vw, 47px);
+      margin: 17px 0 0;
+      color: var(--muted);
+      font-size: 10px;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .controls {
+      display: flex;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 34px;
+    }
+
+    .control {
+      min-width: 112px;
+      min-height: 46px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      padding: 0 18px;
+      border: 1px solid var(--line);
+      border-radius: 3px;
+      color: var(--ink);
+      background: var(--white);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 700;
+      transition: background-color 140ms ease, border-color 140ms ease, transform 140ms ease;
+    }
+
+    .control:hover:not(:disabled) { border-color: #aab1a7; transform: translateY(-1px); }
+    .control:focus-visible { outline: 3px solid rgba(23, 107, 80, 0.28); outline-offset: 2px; }
+    .control:disabled { color: #a3a69e; cursor: not-allowed; }
+    .control svg { width: 15px; height: 15px; }
+
+    .control.primary {
+      min-width: 140px;
+      border-color: var(--green);
+      color: white;
+      background: var(--green);
+    }
+
+    .control.primary:hover:not(:disabled) { border-color: var(--green-dark); background: var(--green-dark); }
+
+    .laps { margin-top: 30px; }
+
+    .laps-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 2px 11px;
+      border-bottom: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 10px;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .lap-list {
+      max-height: 220px;
+      overflow-y: auto;
+      scrollbar-color: #aeb6aa transparent;
+      scrollbar-width: thin;
+    }
+
+    .empty {
+      padding: 20px 2px;
+      color: var(--muted);
+      font-family: Georgia, "Times New Roman", serif;
+      font-size: 15px;
+      font-style: italic;
+    }
+
+    .lap-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      padding: 12px 2px;
+      border-bottom: 1px solid rgba(217, 219, 210, 0.72);
+      font-size: 13px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .lap-row span:nth-child(2) { text-align: center; color: var(--muted); }
+    .lap-row span:last-child { text-align: right; }
+    .lap-row.best span:first-child { color: var(--green); }
+    .lap-row.slowest span:first-child { color: var(--coral); }
+
+    .footer { font-size: 10px; }
+
+    @media (max-width: 520px) {
+      .page { padding-top: 20px; padding-bottom: 16px; }
+      main { padding-top: 42px; }
+      .eyebrow { display: none; }
+      .control { min-width: 0; flex: 1; padding: 0 12px; }
+      .control.primary { min-width: 0; flex: 1.2; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header class="topbar">
+      <div class="brand">
+        <span class="brand-mark" aria-hidden="true">
+          <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="10" cy="11" r="6.5"/><path d="M10 7v4l2.5 1.5M7.5 2.5h5M10 2.5v2"/></svg>
+        </span>
+        <span>Field Notes</span>
+      </div>
+      <span class="eyebrow">Time, well kept</span>
+    </header>
+
+    <main>
+      <section aria-labelledby="title">
+        <div class="heading-row">
+          <h1 id="title">Stopwatch</h1>
+          <span class="status" id="status" aria-live="polite">Ready</span>
+        </div>
+
+        <div class="timer-panel">
+          <div class="time" role="timer" aria-label="Elapsed time">
+            <span id="hours">00</span><span>:</span><span id="minutes">00</span><span>:</span><span id="seconds">00</span><span class="centiseconds">.<span id="centiseconds">00</span></span>
+          </div>
+          <div class="units" aria-hidden="true"><span>Hours</span><span>Minutes</span><span>Seconds</span></div>
+          <div class="controls">
+            <button class="control" id="lapButton" type="button" disabled aria-label="Record lap">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 5.5h12M4 10h12M4 14.5h7"/><circle cx="15.5" cy="14.5" r="2.5"/></svg>
+              Lap
+            </button>
+            <button class="control primary" id="toggleButton" type="button" aria-label="Start stopwatch">
+              <svg id="toggleIcon" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path d="M6.5 3.8a.8.8 0 0 1 1.2-.7l8 6.2a.9.9 0 0 1 0 1.4l-8 6.2a.8.8 0 0 1-1.2-.7V3.8Z"/></svg>
+              <span id="toggleLabel">Start</span>
+            </button>
+            <button class="control" id="resetButton" type="button" disabled aria-label="Reset stopwatch">
+              <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M4.5 7.5A6 6 0 1 1 4 11M4.5 3.5v4h4"/></svg>
+              Reset
+            </button>
+          </div>
+        </div>
+
+        <section class="laps" aria-label="Lap times">
+          <div class="laps-heading"><span>Lap</span><span id="lapCount">0 records</span></div>
+          <div class="lap-list" id="lapList" aria-live="polite"><div class="empty" id="emptyMessage">Your laps will appear here.</div></div>
+        </section>
+      </section>
+    </main>
+
+    <footer class="footer"><span>Field Notes</span><span>Space to start / stop · L to lap · R to reset</span></footer>
+  </div>
+
+  <script>
+    const hoursDisplay = document.getElementById("hours");
+    const minutesDisplay = document.getElementById("minutes");
+    const secondsDisplay = document.getElementById("seconds");
+    const centisecondsDisplay = document.getElementById("centiseconds");
+    const toggleButton = document.getElementById("toggleButton");
+    const toggleLabel = document.getElementById("toggleLabel");
+    const toggleIcon = document.getElementById("toggleIcon");
+    const lapButton = document.getElementById("lapButton");
+    const resetButton = document.getElementById("resetButton");
+    const statusDisplay = document.getElementById("status");
+    const lapList = document.getElementById("lapList");
+    const lapCount = document.getElementById("lapCount");
+    const emptyMessage = document.getElementById("emptyMessage");
+
+    let elapsedBeforeStart = 0;
+    let startedAt = 0;
+    let running = false;
+    let animationFrame = 0;
+    let laps = [];
+
+    function elapsedNow() {
+      return elapsedBeforeStart + (running ? performance.now() - startedAt : 0);
+    }
+
+    function formatTime(milliseconds, includeHours = true) {
+      const centiseconds = Math.floor(milliseconds / 10) % 100;
+      const totalSeconds = Math.floor(milliseconds / 1000);
+      const seconds = totalSeconds % 60;
+      const minutes = Math.floor(totalSeconds / 60) % 60;
+      const hours = Math.floor(totalSeconds / 3600);
+      const pad = value => String(value).padStart(2, "0");
+      const clock = includeHours
+        ? `${pad(hours)}:${pad(minutes)}:${pad(seconds)}`
+        : `${pad(Math.floor(totalSeconds / 60))}:${pad(seconds)}`;
+      return `${clock}.${pad(centiseconds)}`;
+    }
+
+    function render() {
+      const milliseconds = elapsedNow();
+      const totalSeconds = Math.floor(milliseconds / 1000);
+      hoursDisplay.textContent = String(Math.floor(totalSeconds / 3600)).padStart(2, "0");
+      minutesDisplay.textContent = String(Math.floor(totalSeconds / 60) % 60).padStart(2, "0");
+      secondsDisplay.textContent = String(totalSeconds % 60).padStart(2, "0");
+      centisecondsDisplay.textContent = String(Math.floor(milliseconds / 10) % 100).padStart(2, "0");
+      if (running) animationFrame = requestAnimationFrame(render);
+    }
+
+    function setRunning(nextRunning) {
+      if (nextRunning === running) return;
+      const elapsed = elapsedNow();
+      running = nextRunning;
+      if (running) {
+        startedAt = performance.now();
+        statusDisplay.textContent = "Running";
+        statusDisplay.classList.add("running");
+        toggleLabel.textContent = "Stop";
+        toggleButton.setAttribute("aria-label", "Stop stopwatch");
+        toggleIcon.innerHTML = '<path d="M5 4.5h3.5v11H5zM11.5 4.5H15v11h-3.5z"/>';
+        lapButton.disabled = false;
+        resetButton.disabled = false;
+      } else {
+        cancelAnimationFrame(animationFrame);
+        elapsedBeforeStart = elapsed;
+        statusDisplay.textContent = "Paused";
+        statusDisplay.classList.remove("running");
+        toggleLabel.textContent = "Resume";
+        toggleButton.setAttribute("aria-label", "Resume stopwatch");
+        toggleIcon.innerHTML = '<path d="M6.5 3.8a.8.8 0 0 1 1.2-.7l8 6.2a.9.9 0 0 1 0 1.4l-8 6.2a.8.8 0 0 1-1.2-.7V3.8Z"/>';
+      }
+      render();
+    }
+
+    function addLap() {
+      const total = elapsedNow();
+      const previousTotal = laps.length ? laps[laps.length - 1].total : 0;
+      laps.push({ total, split: total - previousTotal });
+      drawLaps();
+    }
+
+    function drawLaps() {
+      emptyMessage.hidden = laps.length > 0;
+      lapCount.textContent = `${laps.length} ${laps.length === 1 ? "record" : "records"}`;
+      lapList.querySelectorAll(".lap-row").forEach(row => row.remove());
+      const splits = laps.map(lap => lap.split);
+      const fastest = Math.min(...splits);
+      const slowest = Math.max(...splits);
+
+      [...laps].reverse().forEach((lap, reverseIndex) => {
+        const lapNumber = laps.length - reverseIndex;
+        const row = document.createElement("div");
+        row.className = "lap-row";
+        if (laps.length > 1 && lap.split === fastest) row.classList.add("best");
+        if (laps.length > 1 && lap.split === slowest) row.classList.add("slowest");
+        row.innerHTML = `<span>Lap ${lapNumber}</span><span>${formatTime(lap.split, false)}</span><span>${formatTime(lap.total)}</span>`;
+        lapList.append(row);
+      });
+    }
+
+    function reset() {
+      cancelAnimationFrame(animationFrame);
+      running = false;
+      elapsedBeforeStart = 0;
+      laps = [];
+      statusDisplay.textContent = "Ready";
+      statusDisplay.classList.remove("running");
+      toggleLabel.textContent = "Start";
+      toggleButton.setAttribute("aria-label", "Start stopwatch");
+      toggleIcon.innerHTML = '<path d="M6.5 3.8a.8.8 0 0 1 1.2-.7l8 6.2a.9.9 0 0 1 0 1.4l-8 6.2a.8.8 0 0 1-1.2-.7V3.8Z"/>';
+      lapButton.disabled = true;
+      resetButton.disabled = true;
+      render();
+      drawLaps();
+    }
+
+    toggleButton.addEventListener("click", () => setRunning(!running));
+    lapButton.addEventListener("click", addLap);
+    resetButton.addEventListener("click", reset);
+    document.addEventListener("keydown", event => {
+      if (event.repeat || event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) return;
+      if (event.code === "Space") {
+        event.preventDefault();
+        setRunning(!running);
+      } else if (event.key.toLowerCase() === "l" && running) {
+        addLap();
+      } else if (event.key.toLowerCase() === "r" && !resetButton.disabled) {
+        reset();
+      }
+    });
+
+    render();
+  </script>
+</body>
+</html>

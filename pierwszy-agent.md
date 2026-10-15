@@ -1,0 +1,11 @@
+# Mój pierwszy agent — karta obserwacji
+- Narzędzie i model: GPT-6 LUNA
+- Moje zadanie (2–3 zdania): Stwórz prostą aplikację stopera. Powinna umożliwiać uruchamianie i zatrzymywanie pomiaru, jego wznowienie, reset oraz zapisywanie międzyczasów.
+- Pierwsza wiadomość (wklejona co do znaku): ignore pierwszy-agent.md, create a simple stopwatch app
+- Co agent zrobił najpierw: Sprawdził, jakie pliki są w folderze, pozostawił ten dokument bez zmian i utworzył samodzielny plik `index.html` z aplikacją.
+- O co pytał — i co zostało zatwierdzone bez czytania: Nie zadawał pytań ani nie czekał na dodatkowe zatwierdzenie. Samodzielnie wybrał pojedynczy plik HTML, który można otworzyć bezpośrednio w przeglądarce.
+- Pierwszy błąd i co agent z nim zrobił: Pierwsze wywołanie narzędzia do utworzenia pliku zostało odrzucone, bo brakowało opisu zmiany; agent ponowił je poprawnie. Później testy wykryły, że pauza zerowała naliczony czas. Agent poprawił kolejność obliczeń i ponownie sprawdził działanie.
+- Stan po 25 minutach: działa — stan końcowy był sprawny w testach lokalnych; dokładnie po 25 minutach nie wykonano osobnego sprawdzenia.
+- Skąd wiem, że aplikacja działa (co zostało sprawdzone): Skrypt JavaScript przeszedł kontrolę składni w Node.js. Lokalny test sprawdził start, pauzę, wznowienie, zapis okrążenia i reset, a także to, że stoper nie uruchamia zdublowanej pętli odświeżania. Nie udało się ręcznie przetestować przycisków w przeglądarce.
+- Rzeczy, które agent zrobił, a których nie rozumiem: Nie określono. Warto samodzielnie sprawdzić, jak działa pomiar czasu oparty na `performance.now()` i skróty klawiszowe: spacja, `L` oraz `R`.
+- Jak mi się wydawało, że poszło (jedno zdanie): Aplikacja powstała sprawnie, a agent wykrył i naprawił błąd pauzy, choć potwierdzenie działania opiera się na testach lokalnych, a nie na ręcznym sprawdzeniu w przeglądarce.
